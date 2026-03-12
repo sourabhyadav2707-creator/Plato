@@ -3,7 +3,6 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0"/>
-<link rel="icon" href="favicon.png" type="image/png"/>
 <title>Shelves — Reading</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
@@ -223,18 +222,19 @@ body{
 
 /* ── RESPONSIVE ── */
 @media(max-width:640px){
-  .sidebar,.fs-panel{display:none!important;}
-  .reader-wrap{margin-left:0;}
-  .mobile-bar{display:flex;}
+  .mobile-bar,.fs-panel-mobile{display:none!important;}
+  .audio-bar{display:none!important;}
+  .reader-wrap{margin-left:80px;}
   .reader-header{padding:14px 16px 12px;}
-  .page{padding:20px 18px 110px;}
-  .btn-next{bottom:84px;right:16px;width:48px;height:48px;border-radius:12px;}
+  .page{padding:20px 18px 40px;}
+  .btn-next{bottom:24px;right:16px;width:48px;height:48px;border-radius:12px;}
 }
 @media(min-width:641px){
   .mobile-bar,.fs-panel-mobile{display:none!important;}
   .reader-wrap{margin-left:80px;}
 }
 </style>
+<link rel="icon" href="favicon.png" type="image/png"/>
 </head>
 <body>
 
