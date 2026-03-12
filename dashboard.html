@@ -1,0 +1,612 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<link rel="icon" href="favicon.png" type="image/png"/>
+<title>Plato</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=Geist:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --bg:#111010;--surface:#181717;--surface2:#1e1d1d;--surface3:#222121;
+  --line:#242323;--muted:#3e3d3d;--dim:#6b6a6a;--body:#a8a5a0;--text:#ede9e3;
+  --serif:'Libre Baskerville',Georgia,serif;--sans:'Geist',system-ui,sans-serif;
+}
+html{scroll-behavior:smooth;}
+body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:15px;line-height:1.6;-webkit-font-smoothing:antialiased;min-height:100vh;}
+a{text-decoration:none;color:inherit;}
+
+/* TOPNAV */
+.topnav{
+  height:56px;display:flex;align-items:center;justify-content:space-between;
+  padding:0 32px;position:sticky;top:0;z-index:200;
+  background:rgba(17,16,16,.9);-webkit-backdrop-filter:blur(20px);backdrop-filter:blur(20px);
+  border-bottom:1px solid var(--line);
+}
+.topnav-brand{font-family:var(--serif);font-size:16px;color:var(--text);}
+.topnav-date{font-size:11px;color:var(--dim);letter-spacing:.07em;text-transform:uppercase;}
+
+/* FLOATING SIDEBAR — liquid glass */
+.sidebar{
+  position:fixed;left:18px;top:50%;transform:translateY(-50%);
+  z-index:100;
+  background:rgba(30,29,29,.55);
+  border:1px solid rgba(255,255,255,.08);
+  border-radius:22px;padding:16px 8px;
+  display:flex;flex-direction:column;align-items:center;
+  gap:2px;
+  min-height:280px;
+  justify-content:space-between;
+  box-shadow:0 16px 48px rgba(0,0,0,.6), 0 2px 8px rgba(0,0,0,.4), inset 0 1px 0 rgba(255,255,255,.07);
+  backdrop-filter:blur(20px);
+  -webkit-backdrop-filter:blur(20px);
+}
+.nav-btn{
+  width:42px;height:42px;border-radius:13px;
+  display:flex;align-items:center;justify-content:center;
+  cursor:pointer;transition:all .18s;color:var(--dim);
+  background:none;border:none;position:relative;
+}
+.nav-btn:hover{color:var(--body);background:rgba(255,255,255,.05);}
+.nav-btn.active{color:var(--text);background:rgba(255,255,255,.07);}
+.nav-btn svg{width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round;} .nav-btn i{font-size:18px;line-height:1;display:flex;}
+.nav-btn::after{
+  content:attr(data-tip);position:absolute;left:calc(100% + 14px);top:50%;
+  transform:translateY(-50%);background:var(--surface2);border:1px solid var(--line);
+  color:var(--text);font-size:11px;font-weight:500;padding:5px 12px;border-radius:7px;
+  white-space:nowrap;opacity:0;pointer-events:none;transition:opacity .15s;
+}
+.nav-btn:hover::after{opacity:1;}
+.nav-sep{width:22px;height:1px;background:var(--line);margin:4px 0;flex-shrink:0;}
+
+/* MAIN */
+.main{margin-left:76px;padding:0 clamp(20px,3.5vw,52px);min-height:100vh;}
+
+/* HERO GREETING */
+.hero-greeting{padding:52px 0 40px;border-bottom:1px solid var(--line);margin-bottom:44px;}
+.greeting-label::before{content:'';width:20px;height:1px;background:var(--muted);}
+.greeting-heading{
+  font-family:var(--serif);font-size:clamp(30px,4.5vw,48px);
+  font-weight:400;line-height:1.08;letter-spacing:-.03em;color:var(--text);
+}
+.greeting-heading em{font-style:italic;color:var(--body);}
+
+/* HERO GRID */
+.hero-grid{display:grid;grid-template-columns:1fr 272px;gap:16px;margin-bottom:52px;}
+
+/* TODAY CARD */
+.today-card{
+  border-radius:16px;overflow:hidden;
+  position:relative;min-height:320px;
+  display:block;
+}
+.today-card-img{
+  position:absolute;inset:0;width:100%;height:100%;
+  object-fit:cover;display:block;z-index:1;
+  transition:transform .4s ease;
+}
+.today-card:hover .today-card-img{transform:scale(1.02);}
+.today-card-placeholder{
+  position:absolute;inset:0;z-index:0;
+  background:linear-gradient(135deg,#1e1d1d 0%,#161515 60%,#111010 100%);
+}
+.today-card-overlay{
+  position:absolute;inset:0;z-index:2;
+  background:linear-gradient(to top,rgba(5,5,5,.97) 0%,rgba(5,5,5,.55) 50%,rgba(5,5,5,.05) 100%);
+}
+.today-card-body{position:absolute;bottom:0;left:0;right:0;z-index:3;padding:28px 30px;}
+.card-label{font-size:10px;font-weight:500;letter-spacing:.13em;text-transform:uppercase;color:var(--body);margin-bottom:14px;opacity:.7;}
+.today-topic{font-size:10px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--body);margin-bottom:8px;opacity:.8;}
+.today-title{
+  font-family:var(--serif);font-size:clamp(20px,2.6vw,28px);font-weight:400;
+  line-height:1.2;letter-spacing:-.02em;margin-bottom:10px;color:var(--text);
+}
+.today-sub{
+  font-size:13px;color:rgba(168,165,160,.75);font-weight:300;line-height:1.65;
+  display:-webkit-box;-webkit-line-clamp:2;line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;
+  margin-bottom:22px;
+}
+.today-footer{display:flex;align-items:center;justify-content:space-between;}
+.meta-pills{display:flex;gap:8px;}
+.meta-pill{font-size:11px;color:rgba(168,165,160,.5);border:1px solid rgba(255,255,255,.1);padding:4px 10px;border-radius:20px;}
+.btn-begin{
+  display:inline-flex;align-items:center;gap:8px;
+  background:var(--text);color:var(--bg);
+  font-size:13px;font-weight:500;font-family:var(--sans);
+  padding:11px 26px;border-radius:10px;border:none;cursor:pointer;
+  transition:opacity .15s;letter-spacing:.02em;text-decoration:none;
+}
+.btn-begin:hover{opacity:.85;}
+.btn-begin svg{width:13px;height:13px;stroke:currentColor;fill:none;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round;transition:transform .2s;}
+.btn-begin:hover svg{transform:translateX(3px);}
+
+/* STREAK CARD */
+.streak-card{
+  background:rgba(255,255,255,.04);
+  backdrop-filter:blur(28px) saturate(160%);
+  -webkit-backdrop-filter:blur(28px) saturate(160%);
+  border:1px solid rgba(255,255,255,.10);
+  border-top:1px solid rgba(255,255,255,.18);
+  border-left:1px solid rgba(255,255,255,.13);
+  border-radius:24px;
+  padding:28px 24px;
+  display:flex;flex-direction:column;
+  box-shadow:0 8px 32px rgba(0,0,0,.28), inset 0 1px 0 rgba(255,255,255,.08);
+  position:relative;overflow:hidden;
+}
+.streak-card::before{
+  content:'';position:absolute;top:-60px;right:-40px;
+  width:180px;height:180px;
+  background:radial-gradient(circle,rgba(255,255,255,.05) 0%,transparent 70%);
+  pointer-events:none;
+}
+.streak-num{
+  font-family:var(--serif);font-size:84px;font-weight:400;
+  line-height:.85;color:rgba(255,255,255,.92);letter-spacing:-.04em;
+  margin-top:8px;margin-bottom:6px;
+}
+.streak-unit{font-size:12px;color:rgba(255,255,255,.35);font-weight:300;letter-spacing:.05em;margin-bottom:18px;}
+.streak-rule{width:100%;height:1px;background:rgba(255,255,255,.08);margin-bottom:16px;}
+.streak-msg{font-size:13px;color:rgba(255,255,255,.45);font-weight:300;line-height:1.55;flex:1;margin-bottom:24px;}
+.streak-days-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;gap:6px;}
+.sday-circle{
+  flex:1;aspect-ratio:1;border-radius:50%;
+  border:1.5px solid rgba(255,255,255,.15);
+  background:rgba(255,255,255,.04);
+  display:flex;align-items:center;justify-content:center;
+  transition:all .2s;max-width:34px;
+}
+.sday-circle.done{
+  background:rgba(255,255,255,.92);
+  border-color:rgba(255,255,255,.92);
+}
+.sday-circle.done svg{display:block;}
+.sday-circle svg{display:none;width:12px;height:12px;stroke:#111010;stroke-width:2.5;fill:none;stroke-linecap:round;stroke-linejoin:round;}
+.sday-circle.today{
+  border-color:rgba(255,255,255,.5);
+  background:rgba(255,255,255,.1);
+}
+.streak-legend{display:flex;justify-content:space-between;}
+.streak-legend span{font-size:9px;color:rgba(255,255,255,.25);letter-spacing:.05em;text-transform:uppercase;text-align:center;flex:1;}
+
+
+/* SKELETON */
+.sk{background:linear-gradient(90deg,var(--surface2) 25%,var(--surface3) 50%,var(--surface2) 75%);background-size:200% 100%;animation:shimmer 1.4s infinite;border-radius:6px;}
+@keyframes shimmer{to{background-position:-200% 0;}}
+.sk-topic{height:10px;width:60px;margin-bottom:10px;}
+.sk-title{height:22px;width:85%;margin-bottom:8px;border-radius:4px;}
+.sk-sub{height:13px;width:100%;margin-bottom:6px;border-radius:4px;}
+.sk-pill{height:26px;width:80px;border-radius:20px;}
+.sk-btn{height:40px;width:100px;border-radius:10px;}
+.fy-loading{color:var(--dim);font-size:13px;padding:40px 0;grid-column:1/-1;}
+
+/* SECTION HEADER */
+.section-header{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:20px;}
+.section-title{font-family:var(--serif);font-size:clamp(26px,3vw,32px);font-weight:400;color:var(--text);}
+.section-meta{font-size:11px;color:var(--muted);letter-spacing:.06em;}
+
+/* CARD GRID */
+.card-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(228px,1fr));gap:14px;padding-bottom:56px;}
+
+/* FY CARD */
+.fy-card{
+  border-radius:14px;overflow:hidden;
+  transition:transform .22s,box-shadow .22s;
+  text-decoration:none;color:inherit;
+  position:relative;
+  height:320px;
+  display:block;
+}
+.fy-card:hover{transform:translateY(-4px);box-shadow:0 16px 40px rgba(0,0,0,.5);}
+.fy-card-img{
+  position:absolute;inset:0;width:100%;height:100%;
+  object-fit:cover;display:block;
+  transition:transform .4s ease;
+  z-index:1;
+}
+.fy-card:hover .fy-card-img{transform:scale(1.03);}
+.fy-card-placeholder{
+  position:absolute;inset:0;z-index:0;
+  background:linear-gradient(135deg,#1e1d1d 0%,#161515 60%,#111010 100%);
+  display:flex;align-items:center;justify-content:center;
+  font-family:var(--serif);font-size:72px;font-style:italic;
+  color:var(--muted);letter-spacing:-.02em;
+}
+.fy-card-overlay{
+  position:absolute;inset:0;z-index:2;
+  background:linear-gradient(to top,rgba(5,5,5,.96) 0%,rgba(5,5,5,.5) 50%,rgba(5,5,5,.05) 100%);
+}
+.fy-card-body{
+  position:absolute;bottom:0;left:0;right:0;z-index:3;
+  padding:20px 18px 18px;
+}
+.fy-card-topic{font-size:9px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--body);margin-bottom:7px;opacity:.8;}
+.fy-card-title{font-family:var(--serif);font-size:15px;font-weight:400;line-height:1.28;color:var(--text);margin-bottom:14px;}
+.fy-card-footer{display:flex;align-items:center;justify-content:space-between;}
+.fy-card-time{font-size:10px;color:rgba(168,165,160,.55);font-weight:300;}
+.fy-card-cta{
+  font-size:11px;font-weight:500;color:var(--bg);
+  background:var(--text);padding:5px 13px;border-radius:7px;
+  transition:opacity .15s;letter-spacing:.02em;
+}
+.fy-card:hover .fy-card-cta{opacity:.85;}
+
+/* TOAST */
+.toast{position:fixed;bottom:26px;right:26px;background:var(--surface2);border:1px solid var(--line);border-left:2px solid var(--muted);border-radius:10px;padding:13px 18px;font-size:13px;color:var(--body);z-index:999;animation:fu .22s ease;}
+@keyframes fu{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:translateY(0);}}
+
+@media(max-width:860px){.hero-grid{grid-template-columns:1fr;}}
+/* USER MENU */
+.user-menu-wrap{position:relative;}
+.user-menu{
+  display:none;
+  position:absolute;left:calc(100% + 14px);bottom:0;
+  min-width:180px;
+  background:rgba(22,21,21,.88);
+  border:1px solid rgba(255,255,255,.09);
+  border-radius:14px;
+  padding:10px;
+  backdrop-filter:blur(28px);
+  -webkit-backdrop-filter:blur(28px);
+  box-shadow:0 16px 48px rgba(0,0,0,.65), 0 2px 8px rgba(0,0,0,.4), inset 0 1px 0 rgba(255,255,255,.06);
+  animation:menuIn .18s ease both;
+  z-index:200;
+}
+.user-menu.open{display:block;}
+@keyframes menuIn{
+  from{opacity:0;transform:translateX(-6px) scale(.97);}
+  to{opacity:1;transform:translateX(0) scale(1);}
+}
+.user-menu-name{
+  font-size:12px;font-weight:500;color:var(--body);
+  padding:6px 10px 8px;letter-spacing:.01em;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:160px;
+}
+.user-menu-sep{height:1px;background:rgba(255,255,255,.07);margin:2px 0 6px;}
+.user-menu-item{
+  width:100%;display:flex;align-items:center;gap:9px;
+  background:none;border:none;cursor:pointer;
+  font-family:var(--sans);font-size:13px;font-weight:400;
+  padding:9px 10px;border-radius:8px;
+  transition:background .15s;
+  text-align:left;
+}
+.user-menu-item:hover{background:rgba(255,255,255,.06);}
+.user-menu-item.signout{color:#e07070;}
+.user-menu-item.signout svg{stroke:#e07070;}
+
+@media(max-width:560px){.sidebar{display:none;}.main{margin-left:0;}.card-grid{grid-template-columns:repeat(2,1fr);}}
+
+/* MOBILE BOTTOM NAV */
+.bottom-nav{display:none;}
+@media(max-width:560px){
+  .sidebar{display:none;}
+  .main{margin-left:0;padding:0 16px;}
+  .bottom-nav{
+    display:flex;position:fixed;bottom:20px;left:50%;transform:translateX(-50%);
+    background:var(--surface2);border:1px solid var(--line);
+    border-radius:26px;padding:10px 16px;
+    width:310px;
+    justify-content:space-evenly;align-items:center;
+    z-index:200;
+    box-shadow:0 8px 32px rgba(0,0,0,.5);
+  }
+  .bottom-nav .nav-btn{width:44px;height:44px;border-radius:12px;display:flex;align-items:center;justify-content:center;}
+  .bottom-nav .nav-btn::after{display:none;}
+  .card-grid{grid-template-columns:repeat(2,1fr);}
+  .hero-grid{grid-template-columns:1fr;}
+}
+</style>
+</head>
+<body>
+
+<!-- TOPNAV -->
+<nav class="topnav">
+  <div class="topnav-brand">Plato</div>
+  <div class="topnav-date" id="dateDisplay"></div>
+</nav>
+
+<!-- FLOATING SIDEBAR -->
+<aside class="sidebar">
+  <button class="nav-btn active" data-tip="Home"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" width="20" height="20"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg></button>
+  <button class="nav-btn" data-tip="Library" onclick="window.location.href='library.html'"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" width="20" height="20"><path d="M4 19V5a2 2 0 0 1 2-2h13a1 1 0 0 1 1 1v13"/><path d="M4 17h13a1 1 0 0 1 0 2H4"/></svg></button>
+    <div class="user-menu-wrap">
+      <button class="nav-btn" id="userMenuBtn" data-tip="Account" onclick="toggleUserMenu(event)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" width="20" height="20"><circle cx="12" cy="7" r="4"/><path d="M5.5 21a8.38 8.38 0 0 1 13 0"/></svg></button>
+      <div class="user-menu" id="userMenu">
+        <div class="user-menu-name" id="userMenuName">—</div>
+        <div class="user-menu-sep"></div>
+        <button class="user-menu-item signout" onclick="handleSignOut()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" width="15" height="15"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+          Sign out
+        </button>
+      </div>
+    </div>
+  <button class="nav-btn" data-tip="Settings"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" width="20" height="20"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l-.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></button>
+</aside>
+
+<!-- MAIN -->
+<div class="main">
+
+  <div class="hero-greeting">    <div class="greeting-heading" id="greetingHeading"></div>  </div>
+
+  <div class="hero-grid">
+
+    <div class="today-card" id="todayCard">
+      <div class="today-card-placeholder"></div>
+      <div class="today-card-overlay"></div>
+      <div class="today-card-body">
+        <div class="card-label">Today's Briefing</div>
+        <div class="sk sk-topic"></div>
+        <div class="sk sk-title"></div>
+        <div class="sk sk-sub"></div>
+        <div class="today-footer">
+          <div class="meta-pills">
+            <div class="sk sk-pill"></div>
+            <div class="sk sk-pill"></div>
+          </div>
+          <div class="sk sk-btn"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="streak-card">
+      <div class="streak-num" id="streakNum">—</div>
+      <div class="streak-unit">day streak</div>
+      <div class="streak-rule"></div>
+      <div class="streak-msg">Keep going. You are building something that quietly compounds.</div>
+      <div>
+        <div class="streak-days-row">
+          <div class="sday-circle"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div>
+          <div class="sday-circle"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div>
+          <div class="sday-circle"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div>
+          <div class="sday-circle"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div>
+          <div class="sday-circle"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div>
+          <div class="sday-circle"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div>
+          <div class="sday-circle"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div>
+        </div>
+        <div class="streak-legend">
+          <span>M</span><span>T</span><span>W</span><span>T</span><span>F</span><span>S</span><span>S</span>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="section-header">
+    <div class="section-title">For You</div>
+    <div class="section-meta" id="unreadCount"></div>
+  </div>
+  <div class="card-grid" id="forYouGrid">
+    <div class="fy-loading">Loading your briefings...</div>
+  </div>
+
+</div>
+
+<!-- MOBILE BOTTOM NAV -->
+<div class="bottom-nav">
+  <button class="nav-btn active" data-tip="Home"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" width="20" height="20"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg></button>
+  <button class="nav-btn" data-tip="Library" onclick="window.location.href='library.html'"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" width="20" height="20"><path d="M4 19V5a2 2 0 0 1 2-2h13a1 1 0 0 1 1 1v13"/><path d="M4 17h13a1 1 0 0 1 0 2H4"/></svg></button>
+  <button class="nav-btn" data-tip="Profile" onclick="showToast('Profile')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" width="20" height="20"><circle cx="12" cy="7" r="4"/><path d="M5.5 21a8.38 8.38 0 0 1 13 0"/></svg></button>
+  <button class="nav-btn" data-tip="Settings"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" width="20" height="20"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l-.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></button>
+</div>
+
+<script>
+const { createClient } = window.supabase;
+const sb = createClient(
+  'https://hhzwejpaaqjlabpectsr.supabase.co',
+  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhoendlanBhYXFqbGFicGVjdHNyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI4MDMwMDcsImV4cCI6MjA4ODM3OTAwN30.WIl05K0XGh-5VaDZQR8iZDwZ2Gk7EKJzTv1-mxSvjfc'
+);
+
+document.getElementById('dateDisplay').textContent = new Date().toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric'});
+
+function showToast(n){
+  const e=document.getElementById('_t');if(e)e.remove();
+  const t=document.createElement('div');t.id='_t';t.className='toast';
+  t.textContent=n+' — coming soon';
+  document.body.appendChild(t);setTimeout(()=>t.remove(),2200);
+}
+
+async function init() {
+  const { data:{ session } } = await sb.auth.getSession();
+  if (!session) { window.location.href = 'auth.html'; return; }
+  const user = session.user;
+
+  const { data: profile } = await sb
+    .from('profiles')
+    .select('display_name, onboarding_complete')
+    .eq('id', user.id)
+    .maybeSingle();
+
+  if (!profile?.onboarding_complete) { window.location.href = 'onboarding.html'; return; }
+
+  const name = profile?.display_name || '';
+  const hour = new Date().getHours();
+  const tod = hour < 12 ? 'morning' : hour < 17 ? 'afternoon' : 'evening';
+  document.getElementById('greetingHeading').innerHTML = `Good ${tod},<br><em>${name}.</em>`;
+  if (document.getElementById('userMenuName')) document.getElementById('userMenuName').textContent = name || session.user.email;
+
+  await Promise.all([loadBriefings(user.id), loadStreak(user.id)]);
+}
+
+async function loadBriefings(userId) {
+  const { data: interestRows } = await sb
+    .from('user_interests').select('interests(name)').eq('user_id', userId);
+  const interests = (interestRows || []).map(r => r.interests.name);
+  if (!interests.length) { showNoBriefings(); return; }
+
+  const { data: history } = await sb
+    .from('user_briefing_history').select('briefing_id').eq('user_id', userId);
+  const readIds = (history || []).map(h => h.briefing_id);
+
+  let query = sb.from('briefings').select('*').eq('is_published', true).in('interest', interests);
+  if (readIds.length) query = query.not('id', 'in', `(${readIds.join(',')})`);
+
+  const { data: briefings } = await query;
+  if (!briefings?.length) { showNoBriefings(); return; }
+
+  // Pin today's briefing — check Supabase for existing pin for today
+  const todayDate = new Date().toISOString().slice(0, 10);
+
+  const { data: existingPin } = await sb
+    .from('user_briefing_history')
+    .select('briefing_id')
+    .eq('user_id', userId)
+    .eq('session_date', todayDate)
+    .maybeSingle();
+
+  let today;
+  if (existingPin) {
+    // Already pinned today — find it in our briefings list (or fetch it if already read)
+    today = briefings.find(b => b.id === existingPin.briefing_id);
+    if (!today) {
+      // It was already read — fetch it directly
+      const { data: pinned } = await sb
+        .from('briefings')
+        .select('*')
+        .eq('id', existingPin.briefing_id)
+        .maybeSingle();
+      today = pinned;
+    }
+  } else {
+    // No pin yet — pick randomly and save to Supabase
+    today = briefings[Math.floor(Math.random() * briefings.length)];
+    await sb.from('user_briefing_history').upsert({
+      user_id: userId,
+      briefing_id: today.id,
+      session_date: todayDate
+    }, { onConflict: 'user_id,briefing_id' });
+  }
+
+  if (!today) { showNoBriefings(); return; }
+
+  const forYou = briefings.filter(b => b.id !== today.id);
+  renderTodayCard(today);
+  renderForYou(forYou);
+}
+
+function renderTodayCard(b) {
+  document.getElementById('todayCard').innerHTML = `
+    ${b.image_url ? `<img class="today-card-img" src="${b.image_url}" alt=""/>` : ''}
+    <div class="today-card-placeholder"></div>
+    <div class="today-card-overlay"></div>
+    <div class="today-card-body">
+      <div class="card-label">Today's Briefing</div>
+      <div class="today-topic">${b.interest}</div>
+      <div class="today-title">${b.title}</div>
+      ${b.subtitle ? `<div class="today-sub">${b.subtitle}</div>` : ''}
+      <div class="today-footer">
+        <div class="meta-pills">
+          <span class="meta-pill">${b.read_time_minutes} min read</span>
+          <span class="meta-pill">Text + Audio</span>
+        </div>
+        <a href="briefing.html?id=${b.id}" class="btn-begin">Begin <svg viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg></a>
+      </div>
+    </div>`;
+}
+
+function renderForYou(briefings) {
+  const grid = document.getElementById('forYouGrid');
+  const countEl = document.getElementById('unreadCount');
+  if (countEl) countEl.textContent = briefings.length ? briefings.length + ' unread' : '';
+
+  if (!briefings.length) {
+    grid.innerHTML = `<div class="fy-loading">You are all caught up. More briefings coming soon.</div>`;
+    return;
+  }
+
+  const gradients = [
+    ['#1a1f2e','#0d1117'],['#1a2a1a','#0d1a0d'],['#2a1a1a','#1a0d0d'],
+    ['#1f1a2a','#110d1a'],['#2a201a','#1a120d'],['#1a2a26','#0d1a17']
+  ];
+
+  grid.innerHTML = briefings.map((b, i) => {
+    const [g1, g2] = gradients[i % gradients.length];
+    return `
+    <a href="briefing.html?id=${b.id}" class="fy-card">
+      ${b.image_url ? `<img class="fy-card-img" src="${b.image_url}" alt=""/>` : ''}
+      <div class="fy-card-placeholder" style="background:linear-gradient(135deg,${g1} 0%,${g2} 100%);">${b.interest.charAt(0)}</div>
+      <div class="fy-card-overlay"></div>
+      <div class="fy-card-body">
+        <div class="fy-card-topic">${b.interest}</div>
+        <div class="fy-card-title">${b.title}</div>
+        <div class="fy-card-footer">
+          <span class="fy-card-time">${b.read_time_minutes} min</span>
+          <span class="fy-card-cta">Begin</span>
+        </div>
+      </div>
+    </a>`;
+  }).join('');
+}
+
+function showNoBriefings() {
+  document.getElementById('todayCard').innerHTML = `
+    <div class="today-card-placeholder"></div>
+    <div class="today-card-overlay"></div>
+    <div class="today-card-body">
+      <div class="card-label">Today's Briefing</div>
+      <div class="today-title" style="margin-bottom:0;">Nothing new today.</div>
+      <div class="today-sub">Check back soon — more briefings are on the way.</div>
+    </div>`;
+  document.getElementById('forYouGrid').innerHTML = `<div class="fy-loading">You are all caught up.</div>`;
+}
+
+async function loadStreak(userId) {
+  const { data } = await sb
+    .from('user_briefing_history')
+    .select('completed_at')
+    .eq('user_id', userId)
+    .not('completed_at', 'is', null)
+    .order('completed_at', { ascending: false });
+
+  const dates = [...new Set((data || []).map(r =>
+    new Date(r.completed_at).toISOString().split('T')[0]
+  ))].sort().reverse();
+
+  let streak = 0;
+  const check = new Date();
+  for (let i = 0; i < dates.length; i++) {
+    const expected = check.toISOString().split('T')[0];
+    if (dates[i] === expected) { streak++; check.setDate(check.getDate() - 1); }
+    else break;
+  }
+
+  document.getElementById('streakNum').textContent = streak;
+
+  const circles = document.querySelectorAll('.sday-circle');
+  const today = new Date().toISOString().split('T')[0];
+  circles.forEach((circle, i) => {
+    const d = new Date();
+    d.setDate(d.getDate() - (6 - i));
+    const dateStr = d.toISOString().split('T')[0];
+    circle.classList.remove('done','today');
+    if (dates.includes(dateStr)) {
+      circle.classList.add('done');
+      circle.querySelector('svg').style.display = 'block';
+    } else if (dateStr === today) {
+      circle.classList.add('today');
+    }
+  });
+}
+
+init();
+
+function toggleUserMenu(e) {
+  e.stopPropagation();
+  const menu = document.getElementById('userMenu');
+  menu.classList.toggle('open');
+}
+
+document.addEventListener('click', () => {
+  document.getElementById('userMenu')?.classList.remove('open');
+});
+
+async function handleSignOut() {
+  await sb.auth.signOut();
+  window.location.href = 'auth.html';
+}
+</script>
+</body>
+</html>

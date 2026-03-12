@@ -1,0 +1,519 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<link rel="icon" href="favicon.png" type="image/png"/>
+<title>Plato — Let's get started</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=Geist:wght@300;400;500&display=swap" rel="stylesheet"/>
+<style>
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg:      #111010;
+  --surface: #181717;
+  --line:    #242323;
+  --muted:   #3e3d3d;
+  --dim:     #6b6a6a;
+  --body:    #a8a5a0;
+  --text:    #ede9e3;
+  --serif:   'Libre Baskerville', Georgia, serif;
+  --sans:    'Geist', system-ui, sans-serif;
+  --g:       clamp(20px, 5vw, 64px);
+  --max:     960px;
+}
+
+html { scroll-behavior: smooth; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--sans);
+  font-size: 15px;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+a { text-decoration: none; color: inherit; }
+
+.w {
+  max-width: var(--max);
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: var(--g);
+  padding-right: var(--g);
+}
+
+/* ── NAV ── */
+header {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  height: 56px;
+  background: rgba(17,16,16,.94);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border-bottom: 1px solid var(--line);
+  flex-shrink: 0;
+}
+
+header .w {
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.brand {
+  font-family: var(--serif);
+  font-size: 17px;
+  font-weight: 400;
+  color: var(--text);
+  letter-spacing: .01em;
+}
+
+/* ── PROGRESS ── */
+.progress-bar {
+  height: 2px;
+  background: var(--line);
+  flex-shrink: 0;
+}
+
+.progress-fill {
+  height: 100%;
+  background: var(--text);
+  width: 33.3%;
+  transition: width .5s ease;
+}
+
+/* ── MAIN ── */
+main {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: clamp(48px, 10vw, 100px) var(--g);
+}
+
+/* ── STEPS ── */
+.step {
+  display: none;
+  width: 100%;
+  max-width: 540px;
+  animation: fadeUp .4s ease both;
+}
+.step.active { display: block; }
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.step-label {
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: clamp(20px, 3vw, 32px);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.step-label::before {
+  content: '';
+  width: 28px;
+  height: 1px;
+  background: var(--muted);
+  flex-shrink: 0;
+}
+
+.step h1 {
+  font-family: var(--serif);
+  font-size: clamp(28px, 5vw, 52px);
+  font-weight: 400;
+  line-height: 1.1;
+  letter-spacing: -.02em;
+  margin-bottom: clamp(8px, 1.5vw, 12px);
+}
+
+.step h1 em { font-style: italic; color: var(--body); }
+
+.step-sub {
+  font-size: clamp(13px, 1.6vw, 15px);
+  font-weight: 300;
+  color: var(--body);
+  line-height: 1.75;
+  margin-bottom: clamp(28px, 4vw, 44px);
+}
+
+/* ── INPUT ── */
+.field {
+  margin-bottom: clamp(20px, 3vw, 28px);
+}
+
+.field label {
+  display: block;
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: .07em;
+  text-transform: uppercase;
+  color: var(--dim);
+  margin-bottom: 10px;
+}
+
+.field input {
+  width: 100%;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  color: var(--text);
+  font-family: var(--sans);
+  font-size: 16px;
+  font-weight: 300;
+  padding: 14px 18px;
+  outline: none;
+  transition: border-color .2s;
+  -webkit-font-smoothing: antialiased;
+}
+
+.field input::placeholder { color: var(--muted); }
+
+.field input:focus {
+  border-color: var(--body);
+}
+
+/* ── TAGS ── */
+.tags { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: clamp(28px, 4vw, 44px); }
+
+.tag {
+  font-size: clamp(11px, 1.4vw, 13px);
+  color: var(--dim);
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 7px 16px;
+  transition: color .15s, border-color .15s, background .15s;
+  white-space: nowrap;
+  cursor: pointer;
+  user-select: none;
+  background: transparent;
+  font-family: var(--sans);
+}
+.tag:hover { color: var(--body); border-color: var(--muted); }
+.tag.on { color: var(--text); border-color: var(--muted); background: var(--surface); }
+
+/* ── PACE OPTIONS ── */
+.pace-options {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 10px;
+  margin-bottom: clamp(28px, 4vw, 44px);
+}
+
+.pace-card {
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 18px 16px;
+  cursor: pointer;
+  transition: border-color .2s, background .2s;
+  background: transparent;
+  text-align: left;
+  font-family: var(--sans);
+}
+.pace-card:hover { border-color: var(--muted); background: var(--surface); }
+.pace-card.on { border-color: var(--body); background: var(--surface); }
+
+.pace-mins {
+  font-family: var(--serif);
+  font-size: clamp(22px, 3.5vw, 32px);
+  font-weight: 400;
+  color: var(--text);
+  line-height: 1;
+  margin-bottom: 6px;
+}
+.pace-label {
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  color: var(--dim);
+}
+.pace-card.on .pace-label { color: var(--body); }
+
+/* ── ACTIONS ── */
+.actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.btn-back {
+  font-size: 13px;
+  font-weight: 400;
+  color: var(--dim);
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-family: var(--sans);
+  padding: 4px 0;
+  transition: color .15s;
+}
+.btn-back:hover { color: var(--body); }
+
+.btn {
+  display: inline-block;
+  font-family: var(--sans);
+  font-size: 14px;
+  font-weight: 600;
+  color: #1a1815;
+  background: linear-gradient(180deg,#f0ebe2 0%,#d8d2c8 100%);
+  padding: 12px 28px;
+  border-radius: 10px;
+  border: none;
+  cursor: pointer;
+  text-align: center;
+  box-shadow: 0 1px 0 rgba(255,255,255,.5) inset, 0 -1px 0 rgba(0,0,0,.2) inset, 0 3px 0 #7a766c, 0 5px 12px rgba(0,0,0,.4);
+  transition: transform .08s, box-shadow .08s, filter .08s;
+  position: relative; top: 0;
+  letter-spacing: .01em;
+  text-decoration: none;
+}
+.btn:hover { filter: brightness(1.03); }
+.btn:active { transform: translateY(3px); box-shadow: 0 1px 0 rgba(255,255,255,.5) inset, 0 -1px 0 rgba(0,0,0,.2) inset, 0 0px 0 #7a766c, 0 1px 6px rgba(0,0,0,.3); }
+.btn:disabled { opacity: .3; cursor: not-allowed; transform: none; box-shadow: none; filter: none; }
+
+/* ── WELCOME STEP ── */
+.welcome-name {
+  font-family: var(--serif);
+  font-style: italic;
+  color: var(--body);
+}
+
+/* ── FOOTER ── */
+footer {
+  border-top: 1px solid var(--line);
+  padding-top: clamp(16px, 2vw, 20px);
+  padding-bottom: clamp(16px, 2vw, 20px);
+  flex-shrink: 0;
+}
+
+footer .w {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.foot-brand { font-family: var(--serif); font-size: 15px; color: var(--body); }
+.foot-copy  { font-size: 12px; color: var(--muted); }
+
+/* ── MOBILE ── */
+@media (max-width: 560px) {
+  .pace-options { grid-template-columns: 1fr; }
+  .btn { width: 100%; text-align: center; display: block; }
+  .actions {
+    flex-direction: column-reverse;
+    align-items: stretch;
+    gap: 16px;
+  }
+  .btn-back {
+    text-align: center;
+    order: -1;
+  }
+}
+
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<header>
+  <div class="w">
+    <a class="brand" href="index.html">Plato</a>
+    <span style="font-size:12px;color:var(--dim);">Step <span id="stepNum">1</span> of 2</span>
+  </div>
+</header>
+
+<!-- PROGRESS -->
+<div class="progress-bar">
+  <div class="progress-fill" id="progressFill"></div>
+</div>
+
+<!-- MAIN -->
+<main>
+  <div style="width:100%;display:flex;justify-content:center;">
+
+    <!-- STEP 1: Name -->
+    <div class="step active" id="step1">
+      <h1>What should we<br>call <em>you?</em></h1>
+      <p class="step-sub">We'll use your name to personalise your experience.</p>
+      <div class="field">
+        <label for="nameInput">Your name</label>
+        <input type="text" id="nameInput" placeholder="Type your name here" autocomplete="given-name" autofocus />
+      </div>
+      <div class="actions">
+        <span></span>
+        <button class="btn" id="nextBtn1" disabled>Next</button>
+      </div>
+    </div>
+
+    <!-- STEP 2: Interests -->
+    <div class="step" id="step2">
+      <h1>What do you<br>like to <em>learn about?</em></h1>
+      <p class="step-sub">Pick as many as you like. We'll build your daily briefing around what you actually care about.</p>
+      <div class="tags" id="tagList">
+        <span class="tag" data-tag="Startups">Startups</span>
+        <span class="tag" data-tag="Artificial Intelligence">Artificial Intelligence</span>
+        <span class="tag" data-tag="Economics">Economics</span>
+        <span class="tag" data-tag="Psychology">Psychology</span>
+        <span class="tag" data-tag="Investing">Investing</span>
+        <span class="tag" data-tag="Philosophy">Philosophy</span>
+        <span class="tag" data-tag="Productivity">Productivity</span>
+        <span class="tag" data-tag="Big Ideas">Big Ideas</span>
+      </div>
+      <div class="actions">
+        <button class="btn-back" id="backBtn2">← Back</button>
+        <button class="btn" id="nextBtn2" disabled>Next</button>
+      </div>
+    </div>
+
+    <!-- STEP 3: Done -->
+    <div class="step" id="step3" style="text-align:center;max-width:480px;">
+      <h1 style="text-align:center;">Your <em>Plato</em> is<br>ready, <em><span class="welcome-name" id="welcomeName"></span>.</em></h1>
+      <p class="step-sub" style="text-align:center;margin-left:auto;margin-right:auto;">Your daily briefing is ready. Five minutes. That's all it takes to start getting smarter every day.</p>
+      <div style="text-align:center;">
+        <a class="btn" href="dashboard.html" id="openShelvesBtn">Open Plato</a>
+      </div>
+    </div>
+
+  </div>
+</main>
+
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+  const _supabase = supabase.createClient(
+    'https://hhzwejpaaqjlabpectsr.supabase.co',
+    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhoendlanBhYXFqbGFicGVjdHNyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI4MDMwMDcsImV4cCI6MjA4ODM3OTAwN30.WIl05K0XGh-5VaDZQR8iZDwZ2Gk7EKJzTv1-mxSvjfc'
+  );
+</script>
+<script>
+const steps = [null,
+  document.getElementById('step1'),
+  document.getElementById('step2'),
+  document.getElementById('step3'),
+];
+const progressFill = document.getElementById('progressFill');
+const stepNum = document.getElementById('stepNum');
+let current = 1;
+let authedUser = null;
+const LOGIN_PATH = 'auth.html';
+
+async function ensureAuthenticated() {
+  const { data: { user }, error } = await _supabase.auth.getUser();
+  if (error || !user) {
+    window.location.href = LOGIN_PATH;
+    return null;
+  }
+  authedUser = user;
+  return user;
+}
+
+// Guard this page so onboarding only runs for signed-in users.
+ensureAuthenticated();
+
+function goTo(n) {
+  steps[current].classList.remove('active');
+  current = n;
+  steps[current].classList.add('active');
+  steps[current].style.animation = 'none';
+  steps[current].offsetHeight;
+  steps[current].style.animation = '';
+  const pct = current === 3 ? 100 : (current / 2) * 100;
+  progressFill.style.width = pct + '%';
+  stepNum.textContent = Math.min(current, 2);
+}
+
+// Step 1: name
+const nameInput = document.getElementById('nameInput');
+const nextBtn1  = document.getElementById('nextBtn1');
+nameInput.addEventListener('input', () => { nextBtn1.disabled = nameInput.value.trim().length === 0; });
+nameInput.addEventListener('keydown', e => { if (e.key === 'Enter' && !nextBtn1.disabled) goTo(2); });
+nextBtn1.addEventListener('click', () => goTo(2));
+
+// Step 2: interests
+const tagList  = document.getElementById('tagList');
+const nextBtn2 = document.getElementById('nextBtn2');
+tagList.addEventListener('click', e => {
+  const tag = e.target.closest('.tag');
+  if (!tag) return;
+  tag.classList.toggle('on');
+  nextBtn2.disabled = tagList.querySelectorAll('.tag.on').length === 0;
+});
+document.getElementById('backBtn2').addEventListener('click', () => goTo(1));
+nextBtn2.addEventListener('click', async () => {
+  nextBtn2.disabled = true;
+  nextBtn2.textContent = 'Saving.';
+
+  try {
+    const user = authedUser || await ensureAuthenticated();
+    if (!user) return;
+
+    // Save display name
+    await _supabase
+      .from('profiles')
+      .update({ display_name: nameInput.value.trim() })
+      .eq('id', user.id);
+
+    // Get selected interest names
+    const selectedNames = [...tagList.querySelectorAll('.tag.on')]
+      .map(t => t.dataset.tag);
+
+    // Fetch matching interest IDs from DB
+    const { data: interestRows } = await _supabase
+      .from('interests')
+      .select('id, name')
+      .in('name', selectedNames);
+
+    // Save user interests
+    const rows = interestRows.map(i => ({
+      user_id: user.id,
+      interest_id: i.id
+    }));
+    await _supabase.from('user_interests').insert(rows);
+
+    // Mark onboarding complete
+    await _supabase
+      .from('profiles')
+      .update({ onboarding_complete: true })
+      .eq('id', user.id);
+
+    // Show welcome screen
+    document.getElementById('welcomeName').textContent = nameInput.value.trim();
+    goTo(3);
+
+  } catch (err) {
+    console.error('Onboarding error:', err);
+    nextBtn2.disabled = false;
+    nextBtn2.textContent = 'Next';
+    alert('Something went wrong. Please try again.');
+  }
+});
+
+// Enter key
+document.addEventListener('keydown', e => {
+  if (e.key !== 'Enter') return;
+  if (current === 1 && !nextBtn1.disabled) nextBtn1.click();
+  if (current === 2 && !nextBtn2.disabled) nextBtn2.click();
+});
+</script>
+
+</body>
+</html>

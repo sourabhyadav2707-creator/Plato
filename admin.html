@@ -1,0 +1,1064 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<link rel="icon" href="favicon.png" type="image/png"/>
+<title>Plato — Admin</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=Geist:wght@300;400;500&display=swap" rel="stylesheet"/>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg:      #111010;
+  --surface: #181717;
+  --surface2:#1e1d1d;
+  --line:    #242323;
+  --muted:   #3e3d3d;
+  --dim:     #6b6a6a;
+  --body:    #a8a5a0;
+  --text:    #ede9e3;
+  --serif:   'Libre Baskerville', Georgia, serif;
+  --sans:    'Geist', system-ui, sans-serif;
+  --g:       clamp(16px, 3vw, 32px);
+  --green:   #4caf7d;
+  --red:     #e07070;
+  --amber:   #d4924a;
+}
+
+html { scroll-behavior: smooth; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--sans);
+  font-size: 14px;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  min-height: 100vh;
+}
+a { text-decoration: none; color: inherit; }
+
+/* ── GATE ── */
+#gate {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+}
+.gate-card {
+  width: 100%;
+  max-width: 380px;
+  text-align: center;
+}
+.gate-card h1 {
+  font-family: var(--serif);
+  font-size: 28px;
+  font-weight: 400;
+  margin-bottom: 8px;
+}
+.gate-card h1 em { font-style: italic; color: var(--body); }
+.gate-card p { font-size: 13px; color: var(--dim); margin-bottom: 32px; }
+.gate-error {
+  font-size: 12px;
+  color: var(--red);
+  margin-top: 12px;
+  min-height: 16px;
+}
+
+/* ── APP SHELL ── */
+#app { display: none; min-height: 100vh; }
+
+/* ── HEADER ── */
+.admin-header {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  height: 52px;
+  background: rgba(17,16,16,.96);
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid var(--line);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 var(--g);
+}
+.admin-header .brand {
+  font-family: var(--serif);
+  font-size: 16px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.admin-badge {
+  font-family: var(--sans);
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: var(--bg);
+  background: var(--body);
+  padding: 3px 8px;
+  border-radius: 4px;
+}
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+.admin-email { font-size: 12px; color: var(--dim); }
+.btn-signout {
+  font-size: 12px;
+  color: var(--dim);
+  background: none;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  padding: 5px 12px;
+  cursor: pointer;
+  font-family: var(--sans);
+  transition: color .15s, border-color .15s;
+}
+.btn-signout:hover { color: var(--body); border-color: var(--muted); }
+
+/* ── TABS ── */
+.tabs {
+  display: flex;
+  gap: 0;
+  border-bottom: 1px solid var(--line);
+  padding: 0 var(--g);
+  background: var(--bg);
+}
+.tab {
+  font-size: 13px;
+  font-weight: 400;
+  color: var(--dim);
+  padding: 14px 20px;
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  transition: color .15s, border-color .15s;
+  background: none;
+  border-top: none;
+  border-left: none;
+  border-right: none;
+  font-family: var(--sans);
+}
+.tab:hover { color: var(--body); }
+.tab.active { color: var(--text); border-bottom-color: var(--text); }
+
+/* ── MAIN LAYOUT ── */
+.admin-main { padding: 32px var(--g); max-width: 1100px; margin: 0 auto; }
+
+/* ── COMPOSE PANEL ── */
+.compose-grid {
+  display: grid;
+  grid-template-columns: 1fr 340px;
+  gap: 24px;
+  align-items: start;
+}
+
+.panel {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  overflow: hidden;
+}
+.panel-header {
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--line);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.panel-title {
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.panel-body { padding: 20px; }
+
+/* ── FORM ELEMENTS ── */
+.form-group { margin-bottom: 16px; }
+.form-group:last-child { margin-bottom: 0; }
+.form-label {
+  display: block;
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: .07em;
+  text-transform: uppercase;
+  color: var(--dim);
+  margin-bottom: 8px;
+}
+.form-input, .form-select, .form-textarea {
+  width: 100%;
+  background: var(--bg);
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  color: var(--text);
+  font-family: var(--sans);
+  font-size: 14px;
+  font-weight: 300;
+  padding: 10px 14px;
+  outline: none;
+  transition: border-color .2s;
+}
+.form-input::placeholder, .form-textarea::placeholder { color: var(--muted); }
+.form-input:focus, .form-select:focus, .form-textarea:focus { border-color: var(--body); }
+.form-select { cursor: pointer; }
+.form-select option { background: var(--surface); }
+
+.form-textarea {
+  resize: vertical;
+  min-height: 320px;
+  line-height: 1.7;
+  font-size: 14px;
+}
+
+/* ── CHAR COUNT ── */
+.char-count {
+  font-size: 11px;
+  color: var(--muted);
+  text-align: right;
+  margin-top: 6px;
+}
+
+/* ── PREVIEW ── */
+.preview-box {
+  background: var(--bg);
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  padding: 16px;
+  min-height: 120px;
+  font-size: 14px;
+  font-weight: 300;
+  color: var(--body);
+  line-height: 1.8;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+.preview-title {
+  font-family: var(--serif);
+  font-size: 18px;
+  font-weight: 400;
+  color: var(--text);
+  margin-bottom: 4px;
+  line-height: 1.3;
+}
+.preview-subtitle {
+  font-size: 13px;
+  color: var(--dim);
+  margin-bottom: 16px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--line);
+}
+.preview-meta {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+}
+.preview-tag {
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  color: var(--dim);
+  background: var(--surface);
+  border: 1px solid var(--line);
+  padding: 3px 10px;
+  border-radius: 999px;
+}
+
+/* ── BUTTONS ── */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--sans);
+  font-size: 13px;
+  font-weight: 500;
+  padding: 10px 20px;
+  border-radius: 7px;
+  border: none;
+  cursor: pointer;
+  transition: opacity .15s;
+}
+.btn:hover { opacity: .85; }
+.btn:disabled { opacity: .3; cursor: not-allowed; }
+.btn-primary { background: var(--text); color: var(--bg); }
+.btn-outline {
+  background: transparent;
+  color: var(--body);
+  border: 1px solid var(--line);
+}
+.btn-outline:hover { border-color: var(--muted); opacity: 1; }
+.btn-danger { background: transparent; color: var(--red); border: 1px solid #3a2020; }
+.btn-danger:hover { background: #1e1515; opacity: 1; }
+.btn-success { background: var(--green); color: #fff; }
+.btn-sm { padding: 6px 12px; font-size: 12px; }
+
+.btn-row {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-top: 20px;
+}
+
+/* ── STATUS BADGE ── */
+.status {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: .05em;
+  text-transform: uppercase;
+  padding: 3px 10px;
+  border-radius: 999px;
+}
+.status-dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.status.published { color: var(--green); background: rgba(76,175,125,.1); }
+.status.published .status-dot { background: var(--green); }
+.status.draft { color: var(--amber); background: rgba(212,146,74,.1); }
+.status.draft .status-dot { background: var(--amber); }
+
+/* ── BRIEFINGS LIST ── */
+.briefings-list { display: flex; flex-direction: column; gap: 12px; }
+
+.briefing-card {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 18px 20px;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 16px;
+  align-items: start;
+  transition: border-color .2s;
+}
+.briefing-card:hover { border-color: var(--muted); }
+
+.briefing-card-title {
+  font-family: var(--serif);
+  font-size: 16px;
+  font-weight: 400;
+  margin-bottom: 4px;
+  line-height: 1.3;
+}
+.briefing-card-meta {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-top: 8px;
+}
+.briefing-card-meta span {
+  font-size: 12px;
+  color: var(--dim);
+}
+.briefing-card-actions {
+  display: flex;
+  gap: 8px;
+  flex-shrink: 0;
+  align-items: center;
+}
+
+/* ── EMPTY STATE ── */
+.empty {
+  text-align: center;
+  padding: 64px 24px;
+  color: var(--dim);
+}
+.empty-icon { font-size: 32px; margin-bottom: 12px; opacity: .4; }
+.empty p { font-size: 13px; }
+
+/* ── TOAST ── */
+.toast {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  background: var(--surface2);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 12px 18px;
+  font-size: 13px;
+  color: var(--text);
+  z-index: 1000;
+  transform: translateY(80px);
+  opacity: 0;
+  transition: transform .3s ease, opacity .3s ease;
+  max-width: 320px;
+}
+.toast.show { transform: translateY(0); opacity: 1; }
+.toast.success { border-left: 3px solid var(--green); }
+.toast.error { border-left: 3px solid var(--red); }
+
+/* ── MODAL ── */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,.7);
+  z-index: 200;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity .2s;
+}
+.modal-overlay.show { opacity: 1; pointer-events: all; }
+.modal {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 28px;
+  width: 100%;
+  max-width: 480px;
+}
+.modal h3 {
+  font-family: var(--serif);
+  font-size: 20px;
+  font-weight: 400;
+  margin-bottom: 8px;
+}
+.modal p { font-size: 13px; color: var(--body); margin-bottom: 24px; line-height: 1.6; }
+.modal-actions { display: flex; gap: 10px; justify-content: flex-end; }
+
+/* ── SECTION HEADING ── */
+.section-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 20px;
+}
+.section-heading h2 {
+  font-family: var(--serif);
+  font-size: 20px;
+  font-weight: 400;
+}
+
+/* ── FILTER ROW ── */
+.filter-row {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+.filter-select {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  color: var(--body);
+  font-family: var(--sans);
+  font-size: 13px;
+  padding: 8px 12px;
+  outline: none;
+  cursor: pointer;
+}
+.filter-select option { background: var(--surface); }
+
+/* ── LOADING ── */
+.spinner {
+  width: 16px; height: 16px;
+  border: 2px solid var(--line);
+  border-top-color: var(--body);
+  border-radius: 50%;
+  animation: spin .6s linear infinite;
+  display: inline-block;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ── MOBILE ── */
+@media (max-width: 768px) {
+  .compose-grid { grid-template-columns: 1fr; }
+  .briefing-card { grid-template-columns: 1fr; }
+  .briefing-card-actions { justify-content: flex-start; }
+}
+
+/* ── GATE FORM ── */
+.gate-input {
+  width: 100%;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  color: var(--text);
+  font-family: var(--sans);
+  font-size: 15px;
+  font-weight: 300;
+  padding: 13px 16px;
+  outline: none;
+  transition: border-color .2s;
+  margin-bottom: 12px;
+}
+.gate-input:focus { border-color: var(--body); }
+.gate-input::placeholder { color: var(--muted); }
+.gate-btn {
+  width: 100%;
+  background: var(--text);
+  color: var(--bg);
+  border: none;
+  border-radius: 8px;
+  font-family: var(--sans);
+  font-size: 14px;
+  font-weight: 500;
+  padding: 13px;
+  cursor: pointer;
+  transition: opacity .15s;
+}
+.gate-btn:hover { opacity: .85; }
+.gate-btn:disabled { opacity: .3; cursor: not-allowed; }
+</style>
+</head>
+<body>
+
+<!-- ── GATE (shown when not logged in or not admin) ── -->
+<div id="gate">
+  <div class="gate-card">
+    <h1>Plato <em>Admin</em></h1>
+    <p>Sign in with your admin account to continue.</p>
+    <input class="gate-input" type="email" id="gateEmail" placeholder="Admin email" autocomplete="email"/>
+    <input class="gate-input" type="password" id="gatePassword" placeholder="Password"/>
+    <button class="gate-btn" id="gateBtn">Sign in</button>
+    <p class="gate-error" id="gateError"></p>
+  </div>
+</div>
+
+<!-- ── MAIN APP (shown after auth) ── -->
+<div id="app">
+
+  <!-- Header -->
+  <header class="admin-header">
+    <div class="brand">
+      Plato <span class="admin-badge">Admin</span>
+    </div>
+    <div class="header-right">
+      <span class="admin-email" id="adminEmailDisplay"></span>
+      <button class="btn-signout" id="signOutBtn">Sign out</button>
+    </div>
+  </header>
+
+  <!-- Tabs -->
+  <div class="tabs">
+    <button class="tab active" data-tab="compose">New Briefing</button>
+    <button class="tab" data-tab="all">All Briefings</button>
+  </div>
+
+  <!-- ── TAB: COMPOSE ── -->
+  <div class="admin-main" id="tabCompose">
+    <div class="compose-grid">
+
+      <!-- Left: Editor -->
+      <div>
+        <div class="panel">
+          <div class="panel-header">
+            <span class="panel-title">Write Briefing</span>
+            <span id="editingBadge" style="display:none;font-size:11px;color:var(--amber);">Editing existing</span>
+          </div>
+          <div class="panel-body">
+            <input type="hidden" id="editingId"/>
+
+            <div class="form-group">
+              <label class="form-label">Title</label>
+              <input class="form-input" type="text" id="bTitle" placeholder="e.g. Why Most Startups Die in Year Two"/>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Subtitle <span style="color:var(--muted);font-weight:300;text-transform:none;letter-spacing:0;">(optional)</span></label>
+              <input class="form-input" type="text" id="bSubtitle" placeholder="A one-line teaser shown on the feed"/>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Cover Image URL <span style="color:var(--muted);font-weight:300;text-transform:none;letter-spacing:0;">(optional)</span></label>
+              <input class="form-input" type="url" id="bImageUrl" placeholder="https://images.unsplash.com/..."/>
+              <div id="imagePreviewWrap" style="display:none;margin-top:10px;border-radius:10px;overflow:hidden;height:140px;"><img id="imagePreview" src="" alt="" style="width:100%;height:100%;object-fit:cover;display:block;"/></div>
+            </div>
+
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+              <div class="form-group">
+                <label class="form-label">Interest Category</label>
+                <select class="form-select" id="bInterest">
+                  <option value="">Select category</option>
+                  <option>Startups</option>
+                  <option>Artificial Intelligence</option>
+                  <option>Economics</option>
+                  <option>Psychology</option>
+                  <option>Investing</option>
+                  <option>Philosophy</option>
+                  <option>Productivity</option>
+                  <option>Big Ideas</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Read Time (mins)</label>
+                <input class="form-input" type="number" id="bReadTime" value="5" min="1" max="30"/>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Publish Date</label>
+              <input class="form-input" type="date" id="bDate"/>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Content</label>
+              <textarea class="form-textarea" id="bContent" placeholder="Write the briefing here. Use blank lines between paragraphs for spacing. The text will be displayed exactly as you write it."></textarea>
+              <div class="char-count"><span id="charCount">0</span> characters</div>
+            </div>
+
+            <div class="btn-row">
+              <button class="btn btn-outline" id="saveDraftBtn">Save as Draft</button>
+              <button class="btn btn-success" id="publishBtn">Publish Now</button>
+              <button class="btn btn-outline btn-sm" id="clearBtn" style="margin-left:auto;">Clear</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right: Preview -->
+      <div>
+        <div class="panel">
+          <div class="panel-header">
+            <span class="panel-title">Preview</span>
+          </div>
+          <div class="panel-body">
+            <div id="previewBox">
+              <p style="color:var(--muted);font-size:13px;">Start writing to see a preview.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ── TAB: ALL BRIEFINGS ── -->
+  <div class="admin-main" id="tabAll" style="display:none;">
+    <div class="section-heading">
+      <h2>All Briefings</h2>
+      <button class="btn btn-outline btn-sm" id="refreshBtn">Refresh</button>
+    </div>
+
+    <div class="filter-row">
+      <select class="filter-select" id="filterStatus">
+        <option value="all">All status</option>
+        <option value="published">Published</option>
+        <option value="draft">Draft</option>
+      </select>
+      <select class="filter-select" id="filterInterest">
+        <option value="all">All categories</option>
+        <option>Startups</option>
+        <option>Artificial Intelligence</option>
+        <option>Economics</option>
+        <option>Psychology</option>
+        <option>Investing</option>
+        <option>Philosophy</option>
+        <option>Productivity</option>
+        <option>Big Ideas</option>
+      </select>
+    </div>
+
+    <div class="briefings-list" id="briefingsList">
+      <div class="empty">
+        <div class="empty-icon">📭</div>
+        <p>No briefings yet. Write your first one.</p>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ── DELETE MODAL ── -->
+<div class="modal-overlay" id="deleteModal">
+  <div class="modal">
+    <h3>Delete briefing?</h3>
+    <p>This will permanently delete this briefing. Users who have already read it won't be affected, but it will disappear from the feed.</p>
+    <div class="modal-actions">
+      <button class="btn btn-outline" id="cancelDeleteBtn">Cancel</button>
+      <button class="btn btn-danger" id="confirmDeleteBtn">Delete</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── TOAST ── -->
+<div class="toast" id="toast"></div>
+
+<script>
+// ── SUPABASE ──
+const { createClient } = window.supabase;
+const sb = createClient(
+  'https://hhzwejpaaqjlabpectsr.supabase.co',
+  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhoendlanBhYXFqbGFicGVjdHNyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI4MDMwMDcsImV4cCI6MjA4ODM3OTAwN30.WIl05K0XGh-5VaDZQR8iZDwZ2Gk7EKJzTv1-mxSvjfc'
+);
+
+const ADMIN_EMAILS = ['sourabhyadav@getplato.in', 'ajeetkumar@getplato.in'];
+
+// ── STATE ──
+let currentUser = null;
+let deleteTargetId = null;
+let allBriefings = [];
+
+// ── TOAST ──
+function showToast(msg, type = 'success') {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = `toast ${type} show`;
+  setTimeout(() => t.classList.remove('show'), 3000);
+}
+
+// ── SET TODAY'S DATE AS DEFAULT ──
+const today = new Date().toISOString().split('T')[0];
+document.getElementById('bDate').value = today;
+
+// ── AUTH GATE ──
+const gate = document.getElementById('gate');
+const app  = document.getElementById('app');
+
+async function checkAuth() {
+  const { data: { session } } = await sb.auth.getSession();
+  if (session && ADMIN_EMAILS.includes(session.user.email)) {
+    currentUser = session.user;
+    showApp();
+  }
+}
+checkAuth();
+
+function showApp() {
+  gate.style.display = 'none';
+  app.style.display = 'block';
+  document.getElementById('adminEmailDisplay').textContent = currentUser.email;
+  loadBriefings();
+}
+
+// ── GATE SIGN IN ──
+document.getElementById('gateBtn').addEventListener('click', async () => {
+  const btn   = document.getElementById('gateBtn');
+  const email = document.getElementById('gateEmail').value.trim();
+  const pass  = document.getElementById('gatePassword').value;
+  const err   = document.getElementById('gateError');
+  err.textContent = '';
+
+  if (!email || !pass) { err.textContent = 'Please enter email and password.'; return; }
+  if (!ADMIN_EMAILS.includes(email)) { err.textContent = 'This email is not an admin account.'; return; }
+
+  btn.textContent = 'Signing in...';
+  btn.disabled = true;
+
+  const { data, error } = await sb.auth.signInWithPassword({ email, password: pass });
+  if (error) {
+    err.textContent = error.message;
+    btn.textContent = 'Sign in';
+    btn.disabled = false;
+    return;
+  }
+  currentUser = data.user;
+  showApp();
+});
+
+// ── SIGN OUT ──
+document.getElementById('signOutBtn').addEventListener('click', async () => {
+  await sb.auth.signOut();
+  location.reload();
+});
+
+// ── TABS ──
+document.querySelectorAll('.tab').forEach(tab => {
+  tab.addEventListener('click', () => {
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    tab.classList.add('active');
+    const which = tab.dataset.tab;
+    document.getElementById('tabCompose').style.display = which === 'compose' ? 'block' : 'none';
+    document.getElementById('tabAll').style.display     = which === 'all'     ? 'block' : 'none';
+    if (which === 'all') loadBriefings();
+  });
+});
+
+// ── LIVE PREVIEW ──
+function updatePreview() {
+  const title    = document.getElementById('bTitle').value.trim();
+  const subtitle = document.getElementById('bSubtitle').value.trim();
+  const interest = document.getElementById('bInterest').value;
+  const content  = document.getElementById('bContent').value;
+  const readTime = document.getElementById('bReadTime').value;
+  const box      = document.getElementById('previewBox');
+  const chars    = document.getElementById('charCount');
+
+  chars.textContent = content.length;
+
+  if (!title && !content) {
+    box.innerHTML = '<p style="color:var(--muted);font-size:13px;">Start writing to see a preview.</p>';
+    return;
+  }
+
+  // Convert line breaks to paragraphs for preview
+  const formatted = content
+    .split(/\n\n+/)
+    .map(p => p.trim())
+    .filter(Boolean)
+    .map(p => `<p style="margin-bottom:14px;color:var(--body);font-size:14px;font-weight:300;line-height:1.8;">${p.replace(/\n/g, '<br/>')}</p>`)
+    .join('');
+
+  box.innerHTML = `
+    ${title ? `<div class="preview-title">${title}</div>` : ''}
+    ${subtitle ? `<div class="preview-subtitle">${subtitle}</div>` : ''}
+    <div class="preview-meta">
+      ${interest ? `<span class="preview-tag">${interest}</span>` : ''}
+      ${readTime ? `<span class="preview-tag">${readTime} min read</span>` : ''}
+    </div>
+    <div>${formatted || '<p style="color:var(--muted);font-size:13px;">No content yet.</p>'}</div>
+  `;
+}
+
+['bTitle','bSubtitle','bInterest','bContent','bReadTime'].forEach(id => {
+  document.getElementById(id).addEventListener('input', updatePreview);
+});
+
+// Live image preview
+document.getElementById('bImageUrl').addEventListener('input', function() {
+  const url = this.value.trim();
+  const wrap = document.getElementById('imagePreviewWrap');
+  const img  = document.getElementById('imagePreview');
+  if (url) {
+    img.src = url;
+    wrap.style.display = 'block';
+    img.onerror = () => { wrap.style.display = 'none'; };
+  } else {
+    wrap.style.display = 'none';
+  }
+});
+
+// ── SAVE / PUBLISH ──
+async function saveBriefing(publish) {
+  const title    = document.getElementById('bTitle').value.trim();
+  const content  = document.getElementById('bContent').value.trim();
+  const interest = document.getElementById('bInterest').value;
+  const editingId = document.getElementById('editingId').value;
+
+  if (!title)    { showToast('Please add a title.', 'error'); return; }
+  if (!content)  { showToast('Please add content.', 'error'); return; }
+  if (!interest) { showToast('Please select a category.', 'error'); return; }
+
+  const btn = publish ? document.getElementById('publishBtn') : document.getElementById('saveDraftBtn');
+  const originalText = btn.textContent;
+  btn.disabled = true;
+  btn.textContent = 'Saving...';
+
+  const payload = {
+    title,
+    subtitle:           document.getElementById('bSubtitle').value.trim() || null,
+    image_url:          document.getElementById('bImageUrl').value.trim() || null,
+    content,
+    interest,
+    read_time_minutes:  parseInt(document.getElementById('bReadTime').value) || 5,
+    published_at:       document.getElementById('bDate').value || today,
+    is_published:       publish,
+  };
+
+  let error;
+  if (editingId) {
+    ({ error } = await sb.from('briefings').update(payload).eq('id', editingId));
+  } else {
+    ({ error } = await sb.from('briefings').insert(payload));
+  }
+
+  btn.disabled = false;
+  btn.textContent = originalText;
+
+  if (error) {
+    showToast('Error: ' + error.message, 'error');
+    return;
+  }
+
+  showToast(publish ? 'Briefing published!' : 'Draft saved!', 'success');
+  clearForm();
+}
+
+document.getElementById('saveDraftBtn').addEventListener('click', () => saveBriefing(false));
+document.getElementById('publishBtn').addEventListener('click', () => saveBriefing(true));
+
+// ── CLEAR FORM ──
+function clearForm() {
+  document.getElementById('bTitle').value    = '';
+  document.getElementById('bSubtitle').value = '';
+  document.getElementById('bContent').value  = '';
+  document.getElementById('bInterest').value = '';
+  document.getElementById('bReadTime').value = '5';
+  document.getElementById('bDate').value     = today;
+  document.getElementById('bImageUrl').value  = '';
+  document.getElementById('imagePreviewWrap').style.display = 'none';
+  document.getElementById('editingId').value = '';
+  document.getElementById('editingBadge').style.display = 'none';
+  updatePreview();
+}
+document.getElementById('clearBtn').addEventListener('click', clearForm);
+
+// ── LOAD BRIEFINGS ──
+async function loadBriefings() {
+  const list = document.getElementById('briefingsList');
+  list.innerHTML = '<div style="padding:24px;text-align:center;"><span class="spinner"></span></div>';
+
+  const statusFilter   = document.getElementById('filterStatus').value;
+  const interestFilter = document.getElementById('filterInterest').value;
+
+  let query = sb.from('briefings').select('*').order('published_at', { ascending: false }).order('created_at', { ascending: false });
+
+  if (statusFilter === 'published') query = query.eq('is_published', true);
+  if (statusFilter === 'draft')     query = query.eq('is_published', false);
+  if (interestFilter !== 'all')     query = query.eq('interest', interestFilter);
+
+  const { data, error } = await query;
+
+  if (error) {
+    list.innerHTML = `<div class="empty"><p style="color:var(--red);">Error loading briefings: ${error.message}</p></div>`;
+    return;
+  }
+
+  allBriefings = data || [];
+  renderBriefings(allBriefings);
+}
+
+function renderBriefings(briefings) {
+  const list = document.getElementById('briefingsList');
+  if (!briefings.length) {
+    list.innerHTML = '<div class="empty"><div class="empty-icon">📭</div><p>No briefings found.</p></div>';
+    return;
+  }
+
+  list.innerHTML = briefings.map(b => `
+    <div class="briefing-card">
+      <div>
+        <div class="briefing-card-title">${b.title}</div>
+        ${b.subtitle ? `<div style="font-size:13px;color:var(--dim);margin-top:3px;">${b.subtitle}</div>` : ''}
+        <div class="briefing-card-meta">
+          <span class="status ${b.is_published ? 'published' : 'draft'}">
+            <span class="status-dot"></span>
+            ${b.is_published ? 'Published' : 'Draft'}
+          </span>
+          <span>${b.interest}</span>
+          <span>${b.published_at}</span>
+          <span>${b.read_time_minutes} min read</span>
+        </div>
+      </div>
+      <div class="briefing-card-actions">
+        ${!b.is_published ? `<button class="btn btn-success btn-sm" onclick="publishDraft('${b.id}')">Publish</button>` : `<button class="btn btn-outline btn-sm" onclick="unpublish('${b.id}')">Unpublish</button>`}
+        <button class="btn btn-outline btn-sm" onclick="editBriefing('${b.id}')">Edit</button>
+        <button class="btn btn-danger btn-sm" onclick="confirmDelete('${b.id}')">Delete</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+// ── FILTERS ──
+document.getElementById('filterStatus').addEventListener('change', loadBriefings);
+document.getElementById('filterInterest').addEventListener('change', loadBriefings);
+document.getElementById('refreshBtn').addEventListener('click', loadBriefings);
+
+// ── PUBLISH DRAFT ──
+async function publishDraft(id) {
+  const { error } = await sb.from('briefings').update({ is_published: true }).eq('id', id);
+  if (error) { showToast('Error: ' + error.message, 'error'); return; }
+  showToast('Briefing published!', 'success');
+  loadBriefings();
+}
+
+// ── UNPUBLISH ──
+async function unpublish(id) {
+  const { error } = await sb.from('briefings').update({ is_published: false }).eq('id', id);
+  if (error) { showToast('Error: ' + error.message, 'error'); return; }
+  showToast('Briefing unpublished.', 'success');
+  loadBriefings();
+}
+
+// ── EDIT ──
+function editBriefing(id) {
+  const b = allBriefings.find(x => x.id === id);
+  if (!b) return;
+
+  document.getElementById('editingId').value  = b.id;
+  document.getElementById('bTitle').value     = b.title;
+  document.getElementById('bSubtitle').value  = b.subtitle || '';
+  document.getElementById('bContent').value   = b.content;
+  document.getElementById('bInterest').value  = b.interest;
+  document.getElementById('bReadTime').value  = b.read_time_minutes;
+  document.getElementById('bDate').value      = b.published_at;
+  document.getElementById('bImageUrl').value   = b.image_url || '';
+  if (b.image_url) {
+    document.getElementById('imagePreview').src = b.image_url;
+    document.getElementById('imagePreviewWrap').style.display = 'block';
+  } else {
+    document.getElementById('imagePreviewWrap').style.display = 'none';
+  }
+  document.getElementById('editingBadge').style.display = 'inline';
+
+  // Switch to compose tab
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.querySelector('[data-tab="compose"]').classList.add('active');
+  document.getElementById('tabCompose').style.display = 'block';
+  document.getElementById('tabAll').style.display = 'none';
+
+  updatePreview();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+  showToast('Briefing loaded for editing.', 'success');
+}
+
+// ── DELETE ──
+function confirmDelete(id) {
+  deleteTargetId = id;
+  document.getElementById('deleteModal').classList.add('show');
+}
+document.getElementById('cancelDeleteBtn').addEventListener('click', () => {
+  deleteTargetId = null;
+  document.getElementById('deleteModal').classList.remove('show');
+});
+document.getElementById('confirmDeleteBtn').addEventListener('click', async () => {
+  if (!deleteTargetId) return;
+  const { error } = await sb.from('briefings').delete().eq('id', deleteTargetId);
+  document.getElementById('deleteModal').classList.remove('show');
+  deleteTargetId = null;
+  if (error) { showToast('Error: ' + error.message, 'error'); return; }
+  showToast('Briefing deleted.', 'success');
+  loadBriefings();
+});
+
+// Close modal on overlay click
+document.getElementById('deleteModal').addEventListener('click', e => {
+  if (e.target === e.currentTarget) {
+    deleteTargetId = null;
+    document.getElementById('deleteModal').classList.remove('show');
+  }
+});
+
+// ── ENTER KEY ON GATE ──
+document.getElementById('gatePassword').addEventListener('keydown', e => {
+  if (e.key === 'Enter') document.getElementById('gateBtn').click();
+});
+</script>
+
+<!-- ── SUPABASE ADMIN POLICY NOTE ──
+  You need to add INSERT/UPDATE/DELETE policies for the briefings table
+  in Supabase for your admin users. Run this in SQL Editor:
+
+  CREATE POLICY "Admins can insert briefings"
+  ON briefings FOR INSERT TO authenticated
+  WITH CHECK (auth.jwt() ->> 'email' IN ('sourabhyadav@getplato.in', 'ajeetkumar@getplato.in'));
+
+  CREATE POLICY "Admins can update briefings"
+  ON briefings FOR UPDATE TO authenticated
+  USING (auth.jwt() ->> 'email' IN ('sourabhyadav@getplato.in', 'ajeetkumar@getplato.in'));
+
+  CREATE POLICY "Admins can delete briefings"
+  ON briefings FOR DELETE TO authenticated
+  USING (auth.jwt() ->> 'email' IN ('sourabhyadav@getplato.in', 'ajeetkumar@getplato.in'));
+-->
+
+</body>
+</html>

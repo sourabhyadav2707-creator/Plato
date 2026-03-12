@@ -1,0 +1,525 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<link rel="icon" href="favicon.png" type="image/png"/>
+<title>Plato — Your daily five minutes of depth.</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=Geist:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<meta name="description" content="Plato is a smarter alternative to endless doomscrolling. Get a 5 minute daily brief curated to make you get better everyday."/>
+<meta property="og:title" content="Plato — Your daily five minutes of depth."/>
+<meta property="og:description" content="One carefully crafted briefing each morning, matched to your curiosity. No noise. No scroll. Just ideas that stick."/>
+<meta property="og:type" content="website"/>
+<meta name="theme-color" content="#0e0d0d"/>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90' font-family='Georgia,serif'>P</text></svg>"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --bg:#0e0d0d;--surface:#161515;--surface2:#1c1b1b;
+  --line:#222121;--muted:#3a3939;--dim:#686766;--body:#a8a5a0;--text:#ede9e3;
+  --serif:'Libre Baskerville',Georgia,serif;
+  --sans:'Geist',system-ui,sans-serif;
+  --g:clamp(24px,5vw,80px);--max:1080px;--v:clamp(72px,10vw,120px);
+}
+html{scroll-behavior:smooth;}
+body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:15px;line-height:1.6;-webkit-font-smoothing:antialiased;overflow-x:hidden;}
+a{text-decoration:none;color:inherit;}
+.w{max-width:var(--max);margin:0 auto;padding:0 var(--g);}
+
+/* AMBIENT */
+.ambient{position:fixed;inset:0;pointer-events:none;z-index:0;overflow:hidden;}
+.orb{position:absolute;border-radius:50%;filter:blur(120px);opacity:.04;}
+.orb1{width:700px;height:700px;background:#c8b89a;top:-250px;right:-150px;}
+.orb2{width:500px;height:500px;background:#8a7a6a;bottom:-150px;left:-100px;}
+
+/* NAV */
+nav{position:sticky;top:0;z-index:100;height:62px;background:rgba(14,13,13,.9);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border-bottom:1px solid rgba(255,255,255,.05);}
+nav .w{height:100%;display:flex;align-items:center;justify-content:space-between;}
+.brand{font-family:var(--serif);font-size:18px;font-weight:400;letter-spacing:.02em;}
+.nav-right{display:flex;align-items:center;gap:24px;}
+.nav-link{font-size:13px;color:var(--dim);transition:color .15s;}
+.nav-link:hover{color:var(--body);}
+
+/* PHYSICAL BUTTON */
+.btn-primary{
+  display:inline-flex;align-items:center;gap:8px;
+  font-family:var(--sans);font-size:13px;font-weight:600;color:#1a1815;
+  background:linear-gradient(180deg,#f0ebe2 0%,#d8d2c8 100%);
+  padding:11px 22px;border-radius:10px;border:none;cursor:pointer;
+  box-shadow:0 1px 0 rgba(255,255,255,.5) inset,0 -1px 0 rgba(0,0,0,.2) inset,0 3px 0 #7a766c,0 5px 12px rgba(0,0,0,.45);
+  transition:transform .08s,box-shadow .08s;position:relative;top:0;text-decoration:none;letter-spacing:.01em;
+}
+.btn-primary:hover{filter:brightness(1.03);}
+.btn-primary:active{transform:translateY(3px);box-shadow:0 1px 0 rgba(255,255,255,.5) inset,0 -1px 0 rgba(0,0,0,.2) inset,0 0px 0 #7a766c,0 1px 6px rgba(0,0,0,.35);}
+
+.btn-ghost{display:inline-flex;align-items:center;gap:8px;font-family:var(--sans);font-size:13px;font-weight:400;color:var(--body);background:transparent;padding:11px 20px;border-radius:10px;border:1px solid var(--muted);cursor:pointer;transition:border-color .15s,color .15s;text-decoration:none;}
+.btn-ghost:hover{border-color:var(--dim);color:var(--text);}
+
+.btn-cta{
+  display:inline-flex;align-items:center;gap:10px;
+  font-family:var(--sans);font-size:15px;font-weight:600;color:#1a1815;
+  background:linear-gradient(180deg,#f0ebe2 0%,#d8d2c8 100%);
+  padding:15px 36px;border-radius:12px;border:none;cursor:pointer;
+  box-shadow:0 1px 0 rgba(255,255,255,.5) inset,0 -1px 0 rgba(0,0,0,.2) inset,0 4px 0 #7a766c,0 7px 20px rgba(0,0,0,.5);
+  transition:transform .08s,box-shadow .08s;position:relative;top:0;text-decoration:none;letter-spacing:.01em;
+}
+.btn-cta:active{transform:translateY(4px);box-shadow:0 1px 0 rgba(255,255,255,.5) inset,0 -1px 0 rgba(0,0,0,.2) inset,0 0px 0 #7a766c,0 2px 8px rgba(0,0,0,.4);}
+.btn-cta svg{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round;transition:transform .2s;}
+.btn-cta:hover svg{transform:translateX(3px);}
+
+/* HERO */
+.hero{position:relative;z-index:1;padding:clamp(80px,13vh,150px) 0 clamp(64px,10vh,100px);text-align:center;}
+.hero h1{font-family:var(--serif);font-size:clamp(38px,7vw,82px);font-weight:400;line-height:1.05;letter-spacing:-.03em;margin-bottom:24px;max-width:820px;margin-left:auto;margin-right:auto;}
+.hero h1 em{font-style:italic;color:var(--body);}
+.hero-sub{font-size:clamp(14px,1.8vw,17px);font-weight:300;color:var(--dim);max-width:460px;margin:0 auto 44px;line-height:1.8;}
+.hero-actions{display:flex;align-items:center;justify-content:center;gap:12px;flex-wrap:wrap;}
+
+/* MARQUEE */
+.marquee-section{position:relative;z-index:1;padding:clamp(36px,5vw,52px) 0;border-top:1px solid rgba(255,255,255,.04);border-bottom:1px solid rgba(255,255,255,.04);overflow:hidden;}
+.marquee-label{text-align:center;font-size:11px;font-weight:500;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:28px;}
+.marquee-track{display:flex;gap:60px;align-items:center;width:max-content;animation:marquee 35s linear infinite;}
+.marquee-track:hover{animation-play-state:paused;}
+@keyframes marquee{from{transform:translateX(0);}to{transform:translateX(-50%);}}
+.mlogo{opacity:.3;flex-shrink:0;transition:opacity .2s;display:flex;align-items:center;}
+.mlogo img{display:block;}
+.mlogo svg{display:block;}
+.marquee-track:hover .mlogo:hover{opacity:.55;}
+.marquee-section::before,.marquee-section::after{content:'';position:absolute;top:0;bottom:0;width:160px;z-index:2;pointer-events:none;}
+.marquee-section::before{left:0;background:linear-gradient(90deg,var(--bg),transparent);}
+.marquee-section::after{right:0;background:linear-gradient(-90deg,var(--bg),transparent);}
+
+/* ABOUT */
+.about{position:relative;z-index:1;padding:clamp(80px,12vw,140px) 0;}
+.about-glow-wrap{display:flex;justify-content:center;align-items:center;padding:0 clamp(16px,6vw,40px);}
+.glow-text{
+  font-family:var(--serif);
+  font-size:clamp(28px,5vw,62px);
+  font-weight:400;
+  line-height:1.25;
+  letter-spacing:-.025em;
+  text-align:center;
+  max-width:820px;
+}
+.gw{
+  display:inline;
+  color:rgba(237,233,227,.12);
+  transition:color .5s ease;
+  white-space:pre;
+}
+.gw::after{content:' ';}
+.gw.lit{color:var(--text);}
+.gw.dim{color:rgba(237,233,227,.22);}
+
+/* HOW IT WORKS */
+.how{position:relative;z-index:1;padding:var(--v) 0;border-top:1px solid rgba(255,255,255,.04);}
+.how-header{text-align:center;margin-bottom:clamp(48px,8vw,80px);}
+.how-header h2{font-family:var(--serif);font-size:clamp(26px,4vw,44px);font-weight:400;letter-spacing:-.025em;margin-bottom:10px;}
+.how-header h2 em{font-style:italic;color:var(--body);}
+.how-header p{font-size:14px;color:var(--dim);font-weight:300;}
+
+.how-steps{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;position:relative;}
+
+.how-step{
+  position:relative;z-index:1;
+  background:var(--surface);border:1px solid var(--line);
+  border-radius:16px;padding:32px 28px 28px;
+  display:flex;flex-direction:column;gap:0;
+  transition:border-color .25s;
+}
+.how-step-text{margin-top:16px;}
+.how-step-visual{margin-top:auto;padding-top:24px;width:100%;}
+.how-step:hover{border-color:var(--muted);}
+
+.how-num{
+  width:40px;height:40px;border-radius:12px;
+  background:var(--surface2);border:1px solid var(--line);
+  display:flex;align-items:center;justify-content:center;
+  font-family:var(--serif);font-size:15px;color:var(--body);
+  flex-shrink:0;
+}
+.how-step h3{font-family:var(--serif);font-size:clamp(17px,2vw,22px);font-weight:400;line-height:1.2;letter-spacing:-.01em;color:var(--text);}
+.how-step p{font-size:13px;font-weight:300;color:var(--dim);line-height:1.75;}
+
+/* Mock briefing card inside step 1 */
+.mock-card{
+  margin-top:4px;background:var(--bg);border:1px solid var(--line);
+  border-radius:12px;padding:14px 16px;
+}
+.mock-tag{font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:500;margin-bottom:6px;}
+.mock-title{font-family:var(--serif);font-size:13px;color:var(--body);line-height:1.35;font-weight:400;}
+
+/* Mock audio bar inside step 3 */
+.mock-audio{
+  margin-top:4px;background:var(--bg);border:1px solid var(--line);
+  border-radius:12px;padding:12px 14px;
+  display:flex;align-items:center;gap:10px;
+}
+.mock-play{width:28px;height:28px;border-radius:8px;background:var(--text);display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.mock-play svg{width:10px;height:10px;fill:var(--bg);}
+.mock-wave{flex:1;display:flex;align-items:center;gap:2px;height:20px;}
+.mock-wave span{display:block;width:3px;border-radius:2px;background:var(--muted);}
+.mock-time{font-size:11px;color:var(--dim);font-family:var(--sans);flex-shrink:0;}
+
+/* Highlighted sentence mock */
+.mock-text{margin-top:4px;font-size:12px;font-weight:300;color:var(--dim);line-height:1.7;}
+.mock-hl{background:rgba(237,233,227,.12);color:var(--text);border-radius:3px;padding:1px 3px;}
+.mock-pills{display:flex;flex-wrap:wrap;gap:7px;}
+.mpill{font-size:11px;color:var(--muted);border:1px solid var(--line);border-radius:999px;padding:5px 13px;font-family:var(--sans);font-weight:400;}
+.mpill.on{color:var(--text);border-color:rgba(237,233,227,.3);background:rgba(237,233,227,.07);}
+
+/* FAQ */
+.faq{position:relative;z-index:1;padding:var(--v) 0;border-top:1px solid rgba(255,255,255,.04);}
+.faq-header{text-align:center;margin-bottom:clamp(40px,6vw,64px);}
+.faq-header h2{font-family:var(--serif);font-size:clamp(24px,3.5vw,42px);font-weight:400;letter-spacing:-.025em;margin-bottom:10px;}
+.faq-header h2 em{font-style:italic;color:var(--body);}
+.faq-header p{font-size:14px;color:var(--dim);font-weight:300;}
+.faq-list{max-width:680px;margin:0 auto;}
+.faq-item{border-top:1px solid var(--line);}
+.faq-item:last-child{border-bottom:1px solid var(--line);}
+.faq-q{width:100%;text-align:left;background:none;border:none;cursor:pointer;padding:22px 0;display:flex;align-items:center;justify-content:space-between;gap:16px;font-family:var(--sans);font-size:15px;font-weight:400;color:var(--text);transition:color .15s;}
+.faq-q:hover{color:var(--body);}
+.faq-icon{width:22px;height:22px;flex-shrink:0;border:1px solid var(--muted);border-radius:6px;display:flex;align-items:center;justify-content:center;transition:border-color .25s,background .2s;}
+.faq-icon svg{width:10px;height:10px;stroke:var(--dim);fill:none;stroke-width:2;stroke-linecap:round;transition:transform .3s cubic-bezier(.4,0,.2,1);}
+.faq-item.open .faq-icon svg{transform:rotate(45deg);}
+.faq-item.open .faq-icon{border-color:var(--body);background:rgba(237,233,227,.06);}
+.faq-a{max-height:0;overflow:hidden;transition:max-height .38s cubic-bezier(.4,0,.2,1);}
+.faq-a-inner{padding-bottom:22px;font-size:14px;font-weight:300;color:var(--body);line-height:1.85;}
+.faq-item.open .faq-a{max-height:280px;}
+
+/* CTA */
+.cta{position:relative;z-index:1;padding:var(--v) 0;}
+.cta-box{background:var(--surface);border:1px solid var(--line);border-radius:24px;padding:clamp(52px,8vw,88px) clamp(32px,6vw,80px);text-align:center;position:relative;overflow:hidden;}
+.cta-box::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse 70% 50% at 50% 0%,rgba(200,184,154,.07),transparent);pointer-events:none;}
+.cta-box h2{font-family:var(--serif);font-size:clamp(28px,4.5vw,52px);font-weight:400;letter-spacing:-.025em;line-height:1.08;margin-bottom:16px;}
+.cta-box h2 em{font-style:italic;color:var(--body);}
+.cta-box p{font-size:15px;color:var(--dim);font-weight:300;margin-bottom:36px;max-width:400px;margin-left:auto;margin-right:auto;}
+
+/* FOOTER */
+footer{position:relative;z-index:1;border-top:1px solid rgba(255,255,255,.05);padding:clamp(28px,4vw,44px) 0;}
+footer .w{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:16px;}
+.foot-brand{font-family:var(--serif);font-size:15px;color:var(--body);}
+.foot-links{display:flex;gap:22px;}
+.foot-links a{font-size:12px;color:var(--muted);transition:color .15s;}
+.foot-links a:hover{color:var(--body);}
+.foot-copy{font-size:12px;color:var(--muted);}
+
+/* MOBILE */
+@media(max-width:900px){
+  .how-steps{grid-template-columns:1fr;gap:12px;}
+  .how-steps::before{display:none;}
+  .cta-box{padding:48px 28px;}
+}
+@media(max-width:768px){
+  .nav-link{display:none;}
+  .glow-text{font-size:clamp(20px,5.5vw,38px);padding:0 8px;}
+  .marquee-section{padding:28px 0;}
+  .faq-list{padding:0 4px;}
+}
+@media(max-width:480px){
+  .hero-actions{flex-direction:column;align-items:center;}
+  .btn-cta,.btn-ghost{width:100%;max-width:320px;justify-content:center;}
+  .how-step{padding:24px 20px 20px;}
+  .glow-text{font-size:clamp(18px,6vw,28px);line-height:1.35;padding:0 4px;}
+  .about{padding:clamp(60px,10vw,100px) 0;}
+  .cta-box h2{font-size:clamp(24px,6vw,36px);}
+  footer .foot-links{display:none;}
+  .nav-right .btn-primary{font-size:12px;padding:9px 14px;}
+}
+</style>
+</head>
+<body>
+
+<div class="ambient"><div class="orb orb1"></div><div class="orb orb2"></div></div>
+
+<!-- NAV -->
+<nav>
+  <div class="w">
+    <div class="brand">Plato</div>
+    <div class="nav-right">
+      <a class="nav-link" href="#how">How it works</a>
+      <a class="nav-link" href="#faq">FAQ</a>
+      <a class="btn-primary" href="auth.html">Get started</a>
+    </div>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="w">
+    <h1>Your daily <em>five minutes</em><br>of depth.</h1>
+    <p class="hero-sub">One carefully crafted briefing each morning, matched to your curiosity. No noise. No scroll. Just ideas that stick.</p>
+    <div class="hero-actions">
+      <a class="btn-cta" href="auth.html">
+        Start reading free
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+      </a>
+      <a class="btn-ghost" href="#how">How it works</a>
+    </div>
+  </div>
+</section>
+
+<!-- MARQUEE -->
+<section class="marquee-section">
+  <p class="marquee-label">Trusted by people at</p>
+  <div style="position:relative;z-index:1;">
+    <div class="marquee-track" id="mtrack"></div>
+  </div>
+</section>
+
+<!-- ABOUT -->
+<section class="about" id="about">
+  <div class="w">
+    <div class="about-glow-wrap">
+      <p class="glow-text">
+        <span class="gw"><em>Plato</em> is a smarter alternative</span>
+        <span class="gw">to endless doomscrolling.</span>
+        <span class="gw">Get a 5 minute daily brief</span>
+        <span class="gw">curated to make you</span>
+        <span class="gw">get better everyday.</span>
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- HOW IT WORKS -->
+<section class="how" id="how">
+  <div class="w">
+    <div class="how-header">
+      <h2>Simple by <em>design.</em></h2>
+      <p>Three steps. Zero friction. One good idea a day.</p>
+    </div>
+    <div class="how-steps">
+
+      <!-- Step 1 -->
+      <div class="how-step">
+        <div class="how-num">01</div>
+        <div class="how-step-text">
+          <h3>Tell us what<br>you care about</h3>
+          <br>
+          <p>Plato matches every briefing to what you actually care about.</p>
+        </div>
+        <div class="how-step-visual">
+          <div class="mock-pills">
+            <span class="mpill on">Philosophy</span>
+            <span class="mpill on">Economics</span>
+            <span class="mpill">Psychology</span>
+            <span class="mpill on">Startups</span>
+            <span class="mpill">Investing</span>
+            <span class="mpill on">Big Ideas</span>
+            <span class="mpill">Productivity</span>
+            <span class="mpill on">AI</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Step 2 -->
+      <div class="how-step">
+        <div class="how-num">02</div>
+        <div class="how-step-text">
+          <h3>Read it in<br>five minutes</h3>
+          <br>
+          <p>One hand-written briefing, paginated like a book. No feed, no scroll — just a beginning and an end.</p>
+        </div>
+        <div class="how-step-visual">
+          <div class="mock-card" style="padding:10px 14px;">
+            <div style="height:6px;border-radius:3px;background:var(--muted);width:60%;margin-bottom:10px;"></div>
+            <div style="display:flex;flex-direction:column;gap:5px;">
+              <div style="height:5px;border-radius:3px;background:var(--line);width:100%;"></div>
+              <div style="height:5px;border-radius:3px;background:var(--line);width:90%;"></div>
+              <div style="height:5px;border-radius:3px;background:rgba(237,233,227,.15);width:75%;"></div>
+              <div style="height:5px;border-radius:3px;background:var(--line);width:85%;"></div>
+              <div style="height:5px;border-radius:3px;background:var(--line);width:60%;"></div>
+            </div>
+            <div style="margin-top:12px;display:flex;align-items:center;justify-content:space-between;">
+              <div style="font-size:10px;color:var(--muted);">Page 2 / 4</div>
+              <div style="width:28px;height:28px;background:var(--text);border-radius:8px;display:flex;align-items:center;justify-content:center;">
+                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#1a1815" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Step 3 -->
+      <div class="how-step">
+        <div class="how-num">03</div>
+        <div class="how-step-text">
+          <h3>Audio with live<br>highlighting</h3>
+          <br>
+          <p>Hit play and Plato reads aloud, highlighting each sentence in real time as you follow along.</p>
+        </div>
+        <div class="how-step-visual">
+          <div class="mock-audio">
+            <div class="mock-play">
+              <svg viewBox="0 0 24 24" width="10" height="10"><polygon points="5 3 19 12 5 21 5 3" fill="#1a1815"/></svg>
+            </div>
+            <div class="mock-wave" id="mockWave"></div>
+            <div class="mock-time">2:34</div>
+          </div>
+          <div class="mock-text">
+            Markets don't fail randomly —
+            <span class="mock-hl">they fail in patterns that economists have mapped for decades,</span>
+            yet we keep acting surprised.
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section class="faq" id="faq">
+  <div class="w">
+    <div class="faq-header">
+      <h2>Questions? <em>Answered.</em></h2>
+      <p>Everything you need to know before you start.</p>
+    </div>
+    <div class="faq-list" id="faqList">
+      <div class="faq-item">
+        <button class="faq-q">What exactly is Plato?<span class="faq-icon"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></span></button>
+        <div class="faq-a"><div class="faq-a-inner">Plato is a daily reading app that delivers one deep, well-researched briefing every morning — matched to your interests and designed to be read or listened to in under five minutes. No feed. No notifications. Just one good thing to think about.</div></div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-q">How is this different from newsletters?<span class="faq-icon"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></span></button>
+        <div class="faq-a"><div class="faq-a-inner">Newsletters pile up. News apps pull you in forever. Plato gives you exactly one piece of content per day — carefully chosen, deeply written. There's nothing to scroll, no algorithm competing for your attention. You read it, you're done, and you've actually learned something.</div></div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-q">Can I listen instead of read?<span class="faq-icon"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></span></button>
+        <div class="faq-a"><div class="faq-a-inner">Yes. Every briefing has built-in audio that reads aloud with sentence-by-sentence highlighting in sync. Perfect for your morning commute or when you'd rather listen than read.</div></div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-q">Who writes the briefings?<span class="faq-icon"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></span></button>
+        <div class="faq-a"><div class="faq-a-inner">Our editorial team researches and writes every briefing by hand — drawing from academic papers, long-form journalism, and primary sources — then distills the most interesting angle into a five-minute read worth your morning.</div></div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-q">Is Plato free?<span class="faq-icon"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></span></button>
+        <div class="faq-a"><div class="faq-a-inner">It's 100% free. Sign up, pick your interests, and your first briefing is waiting immediately.</div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section class="cta">
+  <div class="w">
+    <div class="cta-box">
+      <h2>Five minutes.<br><em>Every morning.</em></h2>
+      <p>Join readers who start their day with something worth thinking about.</p>
+      <a class="btn-cta" href="auth.html">
+        Create your account
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="w">
+    <div class="foot-brand">Plato</div>
+    <div class="foot-links">
+      <a href="about.html">About</a>
+      <a href="privacy.html">Privacy</a>
+      <a href="terms.html">Terms</a>
+    </div>
+    <div class="foot-copy">© 2026 Plato</div>
+  </div>
+</footer>
+
+<script>
+// ── MARQUEE: Simple Icons CDN + text fallbacks ──
+const logos = [
+  { type:'img', src:'https://cdn.simpleicons.org/openai/a8a5a0',       alt:'ChatGPT'       },
+  { type:'txt', text:'IIM Bangalore' },
+  { type:'txt', text:'Bain & Company' },
+  { type:'img', src:'https://cdn.simpleicons.org/bcg/a8a5a0',          alt:'BCG'           },
+  { type:'txt', text:'IIT Bombay' },
+  { type:'img', src:'https://cdn.simpleicons.org/accenture/a8a5a0',    alt:'Accenture'     },
+  { type:'img', src:'https://cdn.simpleicons.org/goldmansachs/a8a5a0', alt:'Goldman Sachs' },
+  { type:'img', src:'https://cdn.simpleicons.org/palantir/a8a5a0',     alt:'Palantir'      },
+  { type:'txt', text:'JP Morgan' },
+  { type:'img', src:'https://cdn.simpleicons.org/ycombinator/a8a5a0',  alt:'Y Combinator'  },
+  { type:'img', src:'https://cdn.simpleicons.org/zomato/a8a5a0',       alt:'Zomato'        },
+];
+
+function buildMarquee() {
+  const track = document.getElementById('mtrack');
+  [...logos, ...logos].forEach(item => {
+    const wrap = document.createElement('div');
+    wrap.className = 'mlogo';
+    if (item.type === 'img') {
+      const img = document.createElement('img');
+      img.src = item.src;
+      img.alt = item.alt;
+      img.style.cssText = 'height:24px;width:auto;display:block;opacity:.9;';
+      img.onerror = function() {
+        this.replaceWith(Object.assign(document.createElement('span'), {
+          textContent: item.alt,
+          style: 'font-family:Geist,system-ui,sans-serif;font-size:13px;font-weight:500;color:#a8a5a0;white-space:nowrap;letter-spacing:.02em;'
+        }));
+      };
+      wrap.appendChild(img);
+    } else {
+      wrap.innerHTML = `<span style="font-family:Geist,system-ui,sans-serif;font-size:13px;font-weight:500;color:#a8a5a0;white-space:nowrap;letter-spacing:.02em;">${item.text}</span>`;
+    }
+    track.appendChild(wrap);
+  });
+}
+buildMarquee();
+
+// ── MOCK AUDIO WAVE BARS ──
+const wave = document.getElementById('mockWave');
+const heights = [6,10,14,18,14,10,8,12,16,20,16,12,8,10,14,18,12,8,10,6];
+heights.forEach((h,i) => {
+  const bar = document.createElement('span');
+  bar.style.height = h+'px';
+  if(i < 9) bar.style.background = 'var(--body)';
+  wave.appendChild(bar);
+});
+
+// ── GLOW TEXT ON SCROLL ──
+(function() {
+  const words = document.querySelectorAll('.gw');
+  if (!words.length) return;
+
+  function update() {
+    const vh = window.innerHeight;
+    words.forEach((w, i) => {
+      const rect = w.getBoundingClientRect();
+      const center = rect.top + rect.height / 2;
+      // distance from 60% down viewport (sweet spot for reading focus)
+      const focal = vh * 0.58;
+      const dist = Math.abs(center - focal);
+      const range = vh * 0.32;
+
+      if (dist < range * 0.3) {
+        w.classList.add('lit');
+        w.classList.remove('dim');
+      } else if (dist < range) {
+        w.classList.remove('lit');
+        w.classList.add('dim');
+      } else {
+        w.classList.remove('lit', 'dim');
+      }
+    });
+  }
+
+  window.addEventListener('scroll', update, { passive: true });
+  update();
+})();
+
+// ── FAQ ACCORDION ──
+document.getElementById('faqList').addEventListener('click', e => {
+  const btn = e.target.closest('.faq-q');
+  if(!btn) return;
+  const item = btn.closest('.faq-item');
+  const wasOpen = item.classList.contains('open');
+  document.querySelectorAll('.faq-item.open').forEach(i => i.classList.remove('open'));
+  if(!wasOpen) item.classList.add('open');
+});
+</script>
+</body>
+</html>
